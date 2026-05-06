@@ -1,5 +1,8 @@
 const express = require('express')
+const connectDatabase = require('./database')
 const app = express()
+
+connectDatabase()
 
 app.use(express.json())
 
@@ -19,6 +22,9 @@ app.get("/about", (req,res) => {
 app.post("/post", (req, res) => {
 
     const { name, age } = req.body
+
+    console.log(name)
+    console.log(age)
 
     res.status(201).json({
         message: "User created successfully",

@@ -20,17 +20,10 @@ app.get("/about", (req,res) => {
 })
 
 
-app.post("/post", (req, res) => {
-
-    const { name, age } = req.body
-
-    console.log(name)
-    console.log(age)
+app.post("/blog", (req, res) => {
 
     res.status(201).json({
-        message: "User created successfully",
-        name,
-        age
+        message: "Blog api hit successfully"
     })
 })
 

@@ -3,10 +3,13 @@ const express = require('express')
 const connectDatabase = require('./database')
 const Blog = require('./model/blogModel')
 const app = express()
+app.use(express.json())
+
+const {multer, storage} = require('./middleware/multerConfig')
+const upload = multer({storage : storage})
 
 connectDatabase()
 
-app.use(express.json())
 
 app.get("/", (req, res) => {
     res.json({ 
@@ -21,11 +24,17 @@ app.get("/about", (req,res) => {
 })
 
 
-app.post("/blog", (req, res) => {
+app.post("/blog",upload.single('image'), async (req, res) => {
 
     const {title, subtitle, description, image} = req.body
 
-    Blog.create({
+    if(!title || !description || !subtitle) {
+        return res.status(400).json ({
+            message : "Please provide title, description, subtitle, image"
+        })
+    }
+
+    await Blog.create({
         title : title, 
         subtitle : subtitle,
         description : description,

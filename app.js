@@ -1,51 +1,71 @@
-require('dotenv').config()
-const express = require('express')
-const connectDatabase = require('./database')
-const Blog = require('./model/blogModel')
-const app = express()
-app.use(express.json())
+require("dotenv").config();
+const express = require("express");
+const connectDatabase = require("./database");
+const Blog = require("./model/blogModel");
+const app = express();
+app.use(express.json());
 
-const {multer, storage} = require('./middleware/multerConfig')
-const upload = multer({storage : storage})
+const { multer, storage } = require("./middleware/multerConfig");
+const upload = multer({ storage: storage });
 
-connectDatabase()
+connectDatabase();
 
+app.post("/blog", upload.single("image"), async (req, res) => {
+  const { title, subtitle, description, image } = req.body;
+  const filename = req.file.filename;
 
-app.get("/", (req, res) => {
-    res.json({ 
-            message: "This is home page"
-        })
-})
+  if (!title || !description || !subtitle) {
+    return res.status(400).json({
+      message: "Please provide title, description, subtitle",
+    });
+  }
 
-app.get("/about", (req,res) => {
-    res.json({
-        message: "This is about page"
+  await Blog.create({
+    title: title,
+    subtitle: subtitle,
+    description: description,
+    image: filename,
+  });
+
+  res.status(201).json({
+    message: "Blog api hit successfully",
+  });
+});
+
+app.get("/blog", async (req, res) => {
+  const blogs = await Blog.find();
+
+  res.status(200).json({
+    message: "Blogs fetched successfully",
+    data: blogs,
+  });
+});
+
+app.get("/blog/:id", async (req, res) => {
+  const id = req.params.id;
+  const blog = await Blog.findById(id);
+  if (!blog) {
+    return res.status(400).json({
+      message: "No data found",
+    });
+  }
+  res.status(200).json({
+    message: "Fetched successfully",
+    data: blog,
+  });
+});
+
+app.delete("/blog/:id", async (req, res) => {
+    const id = req.params.id
+    await Blog.findByIdAndDelete(id)
+
+    res.status(200).json({
+        message : "Deleted successfully"
     })
 })
 
-
-app.post("/blog",upload.single('image'), async (req, res) => {
-
-    const {title, subtitle, description, image} = req.body
-
-    if(!title || !description || !subtitle) {
-        return res.status(400).json ({
-            message : "Please provide title, description, subtitle, image"
-        })
-    }
-
-    await Blog.create({
-        title : title, 
-        subtitle : subtitle,
-        description : description,
-        image : image
-    })
-
-    res.status(201).json({
-        message: "Blog api hit successfully"
-    })
-})
+app.use(express.static("./storage"));
 
 app.listen(process.env.PORT, () => {
-    console.log("Node server has started")
-})
+  console.log("Node server has started");
+});

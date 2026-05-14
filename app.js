@@ -8,6 +8,13 @@ app.use(express.json());
 const { multer, storage } = require("./middleware/multerConfig");
 const upload = multer({ storage: storage });
 const fs = require("fs");
+const cors = require("cors")
+
+app.use(cors(
+  {
+    origin:"http://localhost:5173"
+  }
+))
 
 connectDatabase();
 
